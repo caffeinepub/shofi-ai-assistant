@@ -302,6 +302,10 @@ interface ChatTabProps {
   isListening: boolean;
   isResearching: boolean;
   speechSupported: boolean;
+  micPermission: "unknown" | "granted" | "denied" | "prompt";
+  onMicPermissionChange: (
+    v: "unknown" | "granted" | "denied" | "prompt",
+  ) => void;
   messageInput: string;
   isLoadingData: boolean;
   onMessageInputChange: (v: string) => void;
@@ -316,6 +320,8 @@ function ChatTab({
   isListening,
   isResearching,
   speechSupported,
+  micPermission,
+  onMicPermissionChange,
   messageInput,
   isLoadingData,
   onMessageInputChange,
@@ -352,6 +358,43 @@ function ChatTab({
           </p>
         )}
       </div>
+
+      {/* Mic permission banner */}
+      {micPermission === "denied" && speechSupported && (
+        <div
+          className="mx-4 mb-2 px-3 py-2.5 rounded-lg flex flex-col gap-1.5 text-sm shrink-0"
+          style={{
+            background: "rgba(234,179,8,0.12)",
+            border: "1px solid rgba(234,179,8,0.35)",
+          }}
+          data-ocid="chat.mic_permission.panel"
+        >
+          <p className="text-yellow-300 text-[12px] leading-snug">
+            🎙️ Microphone access is blocked. To use voice commands, open your
+            browser's site settings and allow microphone access for this page,
+            then refresh.
+          </p>
+          <button
+            type="button"
+            className="self-start px-3 py-1 rounded-md text-[11px] font-medium text-yellow-900 transition-opacity hover:opacity-80"
+            style={{ background: "rgba(234,179,8,0.75)" }}
+            data-ocid="chat.mic_permission.button"
+            onClick={async () => {
+              try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                  audio: true,
+                });
+                for (const t of stream.getTracks()) t.stop();
+                onMicPermissionChange("granted");
+              } catch {
+                onMicPermissionChange("denied");
+              }
+            }}
+          >
+            Request Microphone Access
+          </button>
+        </div>
+      )}
 
       {/* Messages */}
       <div
@@ -433,6 +476,11 @@ function ChatTab({
               type="button"
               onClick={speechSupported ? onMicToggle : undefined}
               disabled={!speechSupported}
+              title={
+                micPermission === "denied"
+                  ? "Microphone blocked - check browser settings"
+                  : undefined
+              }
               className="relative w-[62px] h-[62px] rounded-full flex items-center justify-center transition-transform duration-150 active:scale-90 disabled:opacity-40 disabled:cursor-not-allowed"
               style={{
                 background: isListening
@@ -601,6 +649,100 @@ function CommandsTab({
             ))}
           </div>
         )}
+
+        {/* Built-in Voice Commands */}
+        <div className="mt-4 pb-6">
+          <details className="group" data-ocid="commands.panel">
+            <summary className="flex items-center justify-between cursor-pointer list-none rounded-xl px-4 py-3 violet-surface select-none">
+              <div className="flex items-center gap-2">
+                <Bell className="w-4 h-4 text-primary" />
+                <span className="text-foreground text-sm font-semibold">
+                  Built-in Voice Commands
+                </span>
+                <span className="text-muted-foreground text-xs">
+                  (
+                  {
+                    [
+                      "What time is it",
+                      "What's today's date",
+                      "Good morning",
+                      "Tell me a joke",
+                      "Weather",
+                      "Set a reminder",
+                      "Battery",
+                      "Stop",
+                      "Repeat",
+                      "Open [website]",
+                    ].length
+                  }
+                  )
+                </span>
+              </div>
+              <span className="text-muted-foreground text-xs transition-transform group-open:rotate-180">
+                ▾
+              </span>
+            </summary>
+            <div className="mt-2 space-y-1.5">
+              {[
+                {
+                  trigger: "What time is it / What's the time",
+                  response: "Tells you the current time",
+                },
+                {
+                  trigger: "What's today's date / What day is it",
+                  response: "Tells you today's full date",
+                },
+                {
+                  trigger: "Good morning / Hello / Hi Shofi / Hey",
+                  response: "Time-aware greeting from Shofi",
+                },
+                {
+                  trigger: "Tell me a joke / Say something funny",
+                  response: "Shofi tells you a random joke",
+                },
+                {
+                  trigger: "Weather / How's the weather",
+                  response: "Weather info or offers to search",
+                },
+                {
+                  trigger: "Set / Add / Create a reminder",
+                  response: "Acknowledges your reminder",
+                },
+                {
+                  trigger: "Battery / Battery level",
+                  response: "Reports your battery percentage",
+                },
+                {
+                  trigger: "Stop / Quiet / Shut up",
+                  response: "Stops Shofi from speaking",
+                },
+                {
+                  trigger: "Repeat / Say that again",
+                  response: "Repeats last Shofi message",
+                },
+                {
+                  trigger: "Open [website] / Go to [site]",
+                  response: "Opens the website in a new tab",
+                },
+              ].map((cmd, i) => (
+                <div
+                  key={cmd.trigger}
+                  className="glass-surface flex items-start gap-3 rounded-xl px-4 py-2.5"
+                  data-ocid={`commands.item.${i + 1}`}
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="text-primary text-xs font-semibold leading-tight">
+                      &ldquo;{cmd.trigger}&rdquo;
+                    </p>
+                    <p className="text-foreground/70 text-xs mt-0.5 leading-snug">
+                      → {cmd.response}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </details>
+        </div>
       </div>
     </div>
   );
@@ -958,11 +1100,15 @@ export default function App() {
   const [messageInput, setMessageInput] = useState("");
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [speechSupported, setSpeechSupported] = useState(false);
+  const [micPermission, setMicPermission] = useState<
+    "unknown" | "granted" | "denied" | "prompt"
+  >("unknown");
   const [voiceName, setVoiceName] = useState("");
 
   // ── Refs ───────────────────────────────────────────────────────────────────
   const voiceRef = useRef<SpeechSynthesisVoice | null>(null);
   const recognitionRef = useRef<any>(null);
+  const speechAPIRef = useRef<any>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const contactsRef = useRef<BackendContact[]>(contacts);
   const masterNameRef = useRef<string>(masterName);
@@ -1078,29 +1224,47 @@ export default function App() {
     }
     setSpeechSupported(true);
 
-    const rec = new SpeechRecognitionAPI();
-    rec.continuous = false;
-    rec.interimResults = false;
-    rec.lang = "en-US";
+    speechAPIRef.current = SpeechRecognitionAPI;
+    return () => recognitionRef.current?.abort();
+  }, []);
 
-    rec.onresult = (event: any) => {
-      const transcript: string = event.results[0][0].transcript;
-      // Always call the latest processCommand via ref
-      processCommandRef.current?.(transcript);
-    };
-
-    rec.onend = () => setIsListening(false);
-
-    rec.onerror = (event: any) => {
-      console.warn("Speech recognition error:", event.error);
-      setIsListening(false);
-      if (event.error !== "aborted" && event.error !== "no-speech") {
-        toast.error(`Voice error: ${event.error}`);
+  // ── Mic permission check ───────────────────────────────────────────────────
+  useEffect(() => {
+    let permissionStatus: PermissionStatus | null = null;
+    const checkPermission = async () => {
+      try {
+        permissionStatus = await navigator.permissions.query({
+          name: "microphone" as PermissionName,
+        });
+        setMicPermission(
+          permissionStatus.state as "granted" | "denied" | "prompt",
+        );
+        permissionStatus.onchange = () => {
+          if (permissionStatus) {
+            setMicPermission(
+              permissionStatus.state as "granted" | "denied" | "prompt",
+            );
+          }
+        };
+        if (permissionStatus.state === "prompt") {
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+              audio: true,
+            });
+            for (const t of stream.getTracks()) t.stop();
+            setMicPermission("granted");
+          } catch {
+            setMicPermission("denied");
+          }
+        }
+      } catch {
+        // Permissions API not supported, ignore
       }
     };
-
-    recognitionRef.current = rec;
-    return () => recognitionRef.current?.abort();
+    checkPermission();
+    return () => {
+      if (permissionStatus) permissionStatus.onchange = null;
+    };
   }, []);
 
   // ── speak ──────────────────────────────────────────────────────────────────
@@ -1123,6 +1287,7 @@ export default function App() {
     const id = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
     setMessages((prev) => [...prev, { id, speaker, text }]);
     actorRef.current?.addMessage(speaker, text).catch(console.warn);
+    if (speaker === "shofi" && text) lastShofiSpeechRef.current = text;
   }, []);
 
   // ── processCommand ─────────────────────────────────────────────────────────
@@ -1206,6 +1371,173 @@ export default function App() {
         return;
       }
 
+      // ── Time ────────────────────────────────────────────────────────────
+      if (
+        [
+          "WHAT TIME IS IT",
+          "WHAT'S THE TIME",
+          "TELL ME THE TIME",
+          "CURRENT TIME",
+        ].includes(stripped)
+      ) {
+        const r = `It is ${new Date().toLocaleTimeString()}, Master.`;
+        addToChat("user", input);
+        addToChat("shofi", r);
+        speak(r);
+        return;
+      }
+
+      // ── Date ────────────────────────────────────────────────────────────
+      if (
+        [
+          "WHAT'S TODAY'S DATE",
+          "WHAT IS TODAY'S DATE",
+          "WHAT DAY IS IT",
+          "WHAT DATE IS IT",
+        ].includes(stripped)
+      ) {
+        const r = `Today is ${new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}, Master.`;
+        addToChat("user", input);
+        addToChat("shofi", r);
+        speak(r);
+        return;
+      }
+
+      // ── Greeting ─────────────────────────────────────────────────────────
+      if (
+        [
+          "GOOD MORNING",
+          "GOOD AFTERNOON",
+          "GOOD EVENING",
+          "GOOD NIGHT",
+          "HELLO",
+          "HI SHOFI",
+          "HEY",
+        ].includes(stripped)
+      ) {
+        const h = new Date().getHours();
+        let r: string;
+        if (h >= 5 && h < 12)
+          r = "Good morning, Master! Ready to serve you all day. 🌅";
+        else if (h >= 12 && h < 17)
+          r = "Good afternoon, Master! What can I do for you? ☀️";
+        else if (h >= 17 && h < 21)
+          r = "Good evening, Master! Hope you had a wonderful day. 🌆";
+        else r = "Good night, Master! Sweet dreams. 🌙";
+        addToChat("user", input);
+        addToChat("shofi", r);
+        speak(r);
+        return;
+      }
+
+      // ── Joke ─────────────────────────────────────────────────────────────
+      if (
+        stripped.startsWith("TELL ME A JOKE") ||
+        stripped.startsWith("TELL A JOKE") ||
+        stripped.startsWith("SAY SOMETHING FUNNY")
+      ) {
+        const jokes = [
+          "Why don't scientists trust atoms? Because they make up everything!",
+          "I told my computer I needed a break. Now it won't stop sending me Kit Kat ads.",
+          "Why did the scarecrow win an award? Because he was outstanding in his field!",
+          "What do you call a fish without eyes? A fsh.",
+          "Why can't you give Elsa a balloon? Because she'll let it go!",
+        ];
+        const joke = jokes[Math.floor(Math.random() * jokes.length)];
+        addToChat("user", input);
+        addToChat("shofi", joke);
+        speak(joke);
+        return;
+      }
+
+      // ── Weather ──────────────────────────────────────────────────────────
+      if (
+        stripped.startsWith("WEATHER") ||
+        stripped.startsWith("HOW'S THE WEATHER") ||
+        stripped.startsWith("WHAT'S THE WEATHER")
+      ) {
+        const r =
+          "I don't have access to live weather data, Master, but I can search it for you. Would you like me to look it up?";
+        addToChat("user", input);
+        addToChat("shofi", r);
+        speak(r);
+        return;
+      }
+
+      // ── Reminder / Alarm ─────────────────────────────────────────────────
+      if (/^(?:SET|ADD|CREATE)\s+(?:A\s+)?(?:REMINDER|ALARM)/i.test(stripped)) {
+        const r =
+          "I've noted that reminder for you, Master. I'll do my best to help you remember. 📝";
+        addToChat("user", input);
+        addToChat("shofi", r);
+        speak(r);
+        return;
+      }
+
+      // ── Battery ──────────────────────────────────────────────────────────
+      if (["BATTERY", "BATTERY LEVEL", "HOW MUCH BATTERY"].includes(stripped)) {
+        addToChat("user", input);
+        (async () => {
+          try {
+            const battery = await (navigator as any).getBattery?.();
+            if (battery) {
+              const pct = Math.round(battery.level * 100);
+              const r = `Your battery is at ${pct}%, Master.`;
+              addToChat("shofi", r);
+              speak(r);
+            } else {
+              const r =
+                "I can't access your battery level in this browser, Master.";
+              addToChat("shofi", r);
+              speak(r);
+            }
+          } catch {
+            const r =
+              "I can't access your battery level in this browser, Master.";
+            addToChat("shofi", r);
+            speak(r);
+          }
+        })();
+        return;
+      }
+
+      // ── Stop / Quiet ─────────────────────────────────────────────────────
+      if (["STOP", "QUIET", "SHUT UP", "STOP TALKING"].includes(stripped)) {
+        window.speechSynthesis.cancel();
+        addToChat("user", input);
+        addToChat("shofi", "Understood, Master. 🤫");
+        return;
+      }
+
+      // ── Repeat ───────────────────────────────────────────────────────────
+      if (["REPEAT", "REPEAT THAT", "SAY THAT AGAIN"].includes(stripped)) {
+        addToChat("user", input);
+        if (lastShofiSpeechRef.current) {
+          speak(lastShofiSpeechRef.current);
+          addToChat("shofi", lastShofiSpeechRef.current);
+        } else {
+          const r = "I have nothing to repeat, Master.";
+          addToChat("shofi", r);
+          speak(r);
+        }
+        return;
+      }
+
+      // ── Open website ─────────────────────────────────────────────────────
+      const openMatch = stripped.match(
+        /^(?:OPEN|GO TO|NAVIGATE TO|VISIT)\s+(.+)$/i,
+      );
+      if (openMatch) {
+        let site = openMatch[1].trim();
+        const url = /^https?:\/\//i.test(site) ? site : `https://${site}`;
+        window.open(url, "_blank");
+        const r = `Opening ${site} for you, Master.`;
+        addToChat("user", input);
+        addToChat("shofi", r);
+        speak(r);
+        return;
+      }
+
       // Check backend custom commands
       try {
         const match = await actorRef.current?.matchCommand(normalized);
@@ -1231,19 +1563,58 @@ export default function App() {
   // Keep processCommand ref updated (avoids stale closure in recognition handler)
   const processCommandRef = useRef(processCommand);
   processCommandRef.current = processCommand;
+  const lastShofiSpeechRef = useRef<string>("");
 
   // ── Mic toggle ─────────────────────────────────────────────────────────────
-  const handleMicToggle = useCallback(() => {
-    if (!recognitionRef.current) return;
+  const handleMicToggle = useCallback(async () => {
     if (isListening) {
-      recognitionRef.current.stop();
+      recognitionRef.current?.stop();
       setIsListening(false);
     } else {
+      if (!speechAPIRef.current) {
+        toast.error("Voice recognition is not supported in this browser.");
+        return;
+      }
       try {
-        recognitionRef.current.start();
+        // Start speech recognition directly (it handles its own permission)
+        const rec = new speechAPIRef.current();
+        rec.continuous = false;
+        rec.interimResults = false;
+        rec.lang = "en-US";
+        rec.onresult = (event: any) => {
+          const transcript: string = event.results[0][0].transcript;
+          processCommandRef.current?.(transcript);
+        };
+        rec.onend = () => setIsListening(false);
+        rec.onerror = (event: any) => {
+          console.warn("Speech recognition error:", event.error);
+          setIsListening(false);
+          if (event.error === "not-allowed") {
+            setMicPermission("denied");
+            toast.error(
+              "Microphone access denied. Please allow microphone access in your browser settings and try again.",
+            );
+          } else if (event.error !== "aborted" && event.error !== "no-speech") {
+            toast.error(`Voice error: ${event.error}`);
+          }
+        };
+        recognitionRef.current = rec;
+        rec.start();
+        setMicPermission("granted");
         setIsListening(true);
-      } catch {
-        toast.error("Could not start voice recognition.");
+      } catch (err: any) {
+        console.error("Could not start voice recognition:", err);
+        if (
+          err?.name === "NotAllowedError" ||
+          err?.name === "PermissionDeniedError"
+        ) {
+          setMicPermission("denied");
+          toast.error(
+            "Microphone access denied. Please allow microphone access in your browser settings and try again.",
+          );
+        } else {
+          toast.error("Could not start voice recognition.");
+        }
       }
     }
   }, [isListening]);
@@ -1259,8 +1630,13 @@ export default function App() {
   // ── Commands CRUD ──────────────────────────────────────────────────────────
   const handleAddCommand = useCallback(
     async (trigger: string, response: string) => {
+      if (!actorRef.current) {
+        setCommands((prev) => [...prev, { trigger, response }]);
+        toast.success("Command saved locally (will sync when ready).");
+        return;
+      }
       try {
-        await actorRef.current?.addCommand(trigger, response);
+        await actorRef.current.addCommand(trigger, response);
         setCommands((prev) => [...prev, { trigger, response }]);
         toast.success("Command added!");
       } catch {
@@ -1430,6 +1806,8 @@ export default function App() {
                   isListening={isListening}
                   isResearching={isResearching}
                   speechSupported={speechSupported}
+                  micPermission={micPermission}
+                  onMicPermissionChange={setMicPermission}
                   messageInput={messageInput}
                   isLoadingData={isLoadingData}
                   onMessageInputChange={setMessageInput}
