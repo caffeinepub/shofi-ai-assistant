@@ -1,0 +1,301 @@
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --radius: 0.75rem;
+
+    /* ── Shofi Dark Atmospheric Theme (always dark) ── */
+    --background: 0.067 0.018 278;
+    --foreground: 0.965 0.014 290;
+    --card: 0.115 0.022 278;
+    --card-foreground: 0.965 0.014 290;
+    --popover: 0.135 0.024 279;
+    --popover-foreground: 0.965 0.014 290;
+
+    /* primary = electric violet #8B5CFF */
+    --primary: 0.553 0.22 289;
+    --primary-foreground: 0.965 0.014 290;
+
+    /* secondary = dark surface */
+    --secondary: 0.135 0.024 279;
+    --secondary-foreground: 0.714 0.034 284;
+
+    --muted: 0.135 0.024 279;
+    --muted-foreground: 0.56 0.03 285;
+
+    /* accent = magenta-tinted #B06CFF */
+    --accent: 0.627 0.218 300;
+    --accent-foreground: 0.965 0.014 290;
+
+    --destructive: 0.577 0.245 27.325;
+    --destructive-foreground: 0.985 0 0;
+
+    --border: 0.28 0.028 280;
+    --input: 0.2 0.025 280;
+    --ring: 0.553 0.22 289;
+
+    --chart-1: 0.553 0.22 289;
+    --chart-2: 0.627 0.218 300;
+    --chart-3: 0.463 0.218 266;
+    --chart-4: 0.714 0.034 284;
+    --chart-5: 0.471 0.252 288;
+
+    --sidebar: 0.115 0.022 278;
+    --sidebar-foreground: 0.965 0.014 290;
+    --sidebar-primary: 0.553 0.22 289;
+    --sidebar-primary-foreground: 0.965 0.014 290;
+    --sidebar-accent: 0.135 0.024 279;
+    --sidebar-accent-foreground: 0.965 0.014 290;
+    --sidebar-border: 0.2 0.025 280;
+    --sidebar-ring: 0.553 0.22 289;
+  }
+
+  /* Dark is always on — no light variant */
+  html {
+    color-scheme: dark;
+  }
+
+  * {
+    @apply border-border;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+  }
+}
+
+/* ─── Shofi Keyframe Animations ──────────────────────────────────────────── */
+
+@keyframes orb-idle-pulse {
+  0%,
+  100% {
+    transform: scale(1) translateY(0);
+    filter: drop-shadow(0 0 18px rgba(139, 92, 255, 0.45));
+  }
+  50% {
+    transform: scale(1.04) translateY(-6px);
+    filter: drop-shadow(0 0 35px rgba(139, 92, 255, 0.7));
+  }
+}
+
+@keyframes orb-listen-pulse {
+  0%,
+  100% {
+    transform: scale(0.97);
+    filter: drop-shadow(0 0 30px rgba(176, 108, 255, 0.65));
+  }
+  50% {
+    transform: scale(1.08);
+    filter: drop-shadow(0 0 55px rgba(176, 108, 255, 0.9));
+  }
+}
+
+@keyframes orb-speak-wave {
+  0%,
+  100% {
+    transform: scale(1) rotate(0deg);
+    filter: drop-shadow(0 0 28px rgba(106, 53, 255, 0.7));
+  }
+  25% {
+    transform: scale(1.05) rotate(1.5deg);
+    filter: drop-shadow(0 0 45px rgba(139, 92, 255, 0.85));
+  }
+  50% {
+    transform: scale(1.02) rotate(0deg);
+    filter: drop-shadow(0 0 55px rgba(176, 108, 255, 0.95));
+  }
+  75% {
+    transform: scale(1.05) rotate(-1.5deg);
+    filter: drop-shadow(0 0 45px rgba(139, 92, 255, 0.85));
+  }
+}
+
+@keyframes glow-ring-1 {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+}
+
+@keyframes glow-ring-2 {
+  0%,
+  100% {
+    opacity: 0.12;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 0.32;
+    transform: translate(-50%, -50%) scale(1.18);
+  }
+}
+
+@keyframes glow-ring-3 {
+  0%,
+  100% {
+    opacity: 0.07;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 0.18;
+    transform: translate(-50%, -50%) scale(1.26);
+  }
+}
+
+@keyframes waveform-bar {
+  0%,
+  100% {
+    transform: scaleY(0.15);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes shofi-text-glow {
+  0%,
+  100% {
+    text-shadow: 0 0 10px rgba(139, 92, 255, 0.45), 0 0 20px
+      rgba(139, 92, 255, 0.25);
+  }
+  50% {
+    text-shadow: 0 0 16px rgba(139, 92, 255, 0.8), 0 0 32px
+      rgba(139, 92, 255, 0.5), 0 0 50px rgba(139, 92, 255, 0.25);
+  }
+}
+
+@keyframes mic-pulse-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(2.0);
+    opacity: 0;
+  }
+}
+
+@keyframes bg-orb-float {
+  0%,
+  100% {
+    transform: translateY(0) translateX(0);
+  }
+  33% {
+    transform: translateY(-20px) translateX(10px);
+  }
+  66% {
+    transform: translateY(10px) translateX(-10px);
+  }
+}
+
+/* ─── Utility animation classes ─────────────────────────────────────────── */
+
+.orb-idle {
+  animation: orb-idle-pulse 4.5s ease-in-out infinite;
+}
+
+.orb-listening {
+  animation: orb-listen-pulse 1.4s ease-in-out infinite;
+}
+
+.orb-speaking {
+  animation: orb-speak-wave 0.75s ease-in-out infinite;
+}
+
+.waveform-bar {
+  animation: waveform-bar 0.8s ease-in-out infinite;
+  transform-origin: bottom center;
+}
+
+.shofi-glow-text {
+  animation: shofi-text-glow 3s ease-in-out infinite;
+}
+
+.glow-ring-1 {
+  animation: glow-ring-1 2.2s ease-in-out infinite;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+}
+
+.glow-ring-2 {
+  animation: glow-ring-2 2.2s ease-in-out infinite 0.4s;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+}
+
+.glow-ring-3 {
+  animation: glow-ring-3 2.2s ease-in-out infinite 0.8s;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+}
+
+.mic-pulse-ring {
+  animation: mic-pulse-ring 1.6s ease-out infinite;
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+}
+
+.bg-orb-float {
+  animation: bg-orb-float 12s ease-in-out infinite;
+}
+
+/* ─── Chat bubble surfaces ───────────────────────────────────────────────── */
+
+@layer utilities {
+  .shofi-bubble {
+    background: rgba(139, 92, 255, 0.2);
+    border: 1px solid rgba(139, 92, 255, 0.3);
+  }
+
+  .user-bubble {
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .glass-surface {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .violet-surface {
+    background: rgba(139, 92, 255, 0.08);
+    border: 1px solid rgba(139, 92, 255, 0.2);
+  }
+
+  .danger-surface {
+    background: rgba(220, 60, 60, 0.06);
+    border: 1px solid rgba(220, 60, 60, 0.15);
+  }
+}
+
+/* ─── Scrollbar ─────────────────────────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 3px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(139, 92, 255, 0.25);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 92, 255, 0.5);
+}
